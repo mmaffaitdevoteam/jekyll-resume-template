@@ -1,4 +1,4 @@
-name:                    Jekyll Docker Deployment
+name:                    Jekyll Cd Workflow
 
 on:
   workflow_dispatch:
