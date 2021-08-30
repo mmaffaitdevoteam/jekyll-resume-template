@@ -1,0 +1,25 @@
+name:                    Jekyll Docker Deployment
+
+on:
+  workflow_dispatch:
+
+env:
+  DOCKER_USER:           "mmaffaitdevoteam"
+  DOCKER_IMAGE:          "jklresume"
+  DOCKER_CONTAINER:      "jkl-run-resume"
+
+jobs:
+  deploy:
+    name:                "Jekyll => Docker Deployment"
+    runs-on:             ubuntu-latest
+    environment:         prd
+    steps:
+      - name:            "Init => Run checkout@v2"
+        run:             |
+          eval $(ssh-agent -s)
+          ssh-add - <<< "${MY_SECRET_KEY}"
+          ssh -o StrictHostKeyChecking=no blue@blue.pdm.ovh docker pull ghcr.io/${{env.DOCKER_USER}}/${{env.DOCKER_IMAGE}}:latest
+          ssh -o StrictHostKeyChecking=no blue@blue.pdm.ovh docker stop ${{env.DOCKER_CONTAINER}} || true
+          ssh -o StrictHostKeyChecking=no blue@blue.pdm.ovh docker run --rm -dti -p 80:80 --name ${{env.DOCKER_CONTAINER}} ghcr.io/${{env.DOCKER_USER}}/${{env.DOCKER_IMAGE}}:latest
+        env:
+          MY_SECRET_KEY: ${{ secrets.ENCRYPTED_SSH_KEY }}
