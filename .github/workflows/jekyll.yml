@@ -1,0 +1,30 @@
+name:                      Jekyll Ci Workflow
+
+on:
+  push:
+    branches:
+      -  main
+  pull_request:
+    branches:
+      -  main
+  workflow_dispatch:
+
+jobs:
+  build:
+    name:                  "Jekyll => Build and Upload"
+    runs-on:               ubuntu-latest
+    steps:
+    - name:                "Init => Run checkout@v2"
+      uses:                actions/checkout@v2
+    - name:                "Build => Build the site in the jekyll/builder container"
+      run:                 |
+        docker run \
+        -v ${{ github.workspace }}:/srv/jekyll -v ${{ github.workspace }}/_site:/srv/jekyll/_site \
+        jekyll/builder:latest /bin/bash -c "chmod -R 777 /srv/jekyll && jekyll build --future"
+    - name:                "Upload => Upload Jekyll buid as a artifact"
+      uses:                actions/upload-artifact@v2
+      with:
+        name:              jekyll-resume-tpl
+        path:              ${{ github.workspace }}/_site
+        if-no-files-found: error
+        retention-days:    7
